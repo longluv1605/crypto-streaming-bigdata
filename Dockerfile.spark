@@ -1,0 +1,6 @@
+FROM bitnami/spark:latest
+WORKDIR /app
+COPY ./streaming_layer/* /app/
+COPY ./trained_model/* /app/trained_model/
+RUN apt-get update && apt-get install -y python3-pip && pip3 install -r /app/requirements.txt
+CMD ["spark-submit", "--master", "spark://spark-master:7077", "/app/streaming_job.py"]

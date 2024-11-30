@@ -1,0 +1,3 @@
+data/*
+!data/stream_data.csv
+.venv
