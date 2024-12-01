@@ -25,7 +25,7 @@ services:
             - "16010:16010"
             - "8085:8085"
         volumes:
-            - ./hbase/init:/docker-entrypoint-initdb.d
+            - ./hbase/init/:/docker-entrypoint-initdb.d
 
     spark-master:
         image: bitnami/spark:latest

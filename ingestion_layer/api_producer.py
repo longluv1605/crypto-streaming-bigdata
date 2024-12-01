@@ -6,11 +6,21 @@ from kafka import KafkaProducer
 KAFKA_TOPIC = 'bitcoin-topic'
 KAFKA_SERVER = 'kafka:9092'
 
-# Initialize Kafka Producer
-producer = KafkaProducer(
-    bootstrap_servers=KAFKA_SERVER,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
+
+def create_kafka_producer():
+    producer = None
+    while producer is None:
+        try:
+            producer = KafkaProducer(
+                bootstrap_servers=KAFKA_SERVER,  # Use the internal Docker port 9092
+                value_serializer=lambda v: json.dumps(v).encode('utf-8')
+            )
+        except Exception as e:
+            print(f"Kafka not available yet, retrying... Error: {e}")
+            time.sleep(5)  # Retry every 5 seconds
+    return producer
+
+producer = create_kafka_producer()
 
 def stream_bitcoin_data():
     idx = 0
@@ -18,8 +28,8 @@ def stream_bitcoin_data():
     data = data[['timestamp', 'close']]
     while idx < len(data):
         row = data.iloc[idx].to_dict()
+        print(f"Sending: {row}")
         producer.send(KAFKA_TOPIC, row)
-        print(f"Sent: {row}")
         time.sleep(5)
         idx += 1
 

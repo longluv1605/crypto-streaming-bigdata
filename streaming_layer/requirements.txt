@@ -1,4 +1,3 @@
-pickle
 pyspark
 pandas 
 scikit-learn 
