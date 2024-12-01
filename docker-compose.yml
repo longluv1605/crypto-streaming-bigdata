@@ -18,25 +18,31 @@ services:
             KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
 
     hbase:
-        image: harisekhon/hbase:latest
+        image: harisekhon/hbase
         container_name: hbase
         ports:
             - "2181:2181"
             - "16010:16010"
             - "8085:8085"
-        volumes:
-            - ./hbase/init/:/docker-entrypoint-initdb.d
+        environment:
+            HBASE_ZOOKEEPER_QUORUM: zookeeper
+            HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT: 2181
+        # volumes:
+        #     - ./hbase/init/create_tables.sh:/docker-entrypoint-initdb.d/create_tables.sh
 
     spark-master:
         image: bitnami/spark:latest
         container_name: spark-master
         environment:
             - SPARK_MODE=master
+            - SPARK_RPC_AUTHENTICATION_ENABLED=no
         ports:
             - "7077:7077"
             - "8080:8080"
         volumes:
             - ./streaming_layer:/app
+        # networks:
+        #     - spark-net
 
     spark-worker:
         image: bitnami/spark:latest
@@ -46,6 +52,8 @@ services:
             - SPARK_MASTER_URL=spark://spark-master:7077
         depends_on:
             - spark-master
+        # networks:
+        #     - spark-net
 
     ingestion:
         build:
@@ -64,3 +72,7 @@ services:
             - kafka
             - spark-master
             - hbase
+
+# networks:
+#     spark-net:
+#         driver: bridge

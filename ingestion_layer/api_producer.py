@@ -30,6 +30,7 @@ def stream_bitcoin_data():
         row = data.iloc[idx].to_dict()
         print(f"Sending: {row}")
         producer.send(KAFKA_TOPIC, row)
+        print(f"Sent: {row}")
         time.sleep(5)
         idx += 1
 

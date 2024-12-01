@@ -48,6 +48,14 @@ df = df.selectExpr("CAST(value AS STRING)") \
 # Add water mark
 df = df.withWatermark("timestamp", "1 minute")
 
+df.writeStream \
+    .outputMode("append") \
+    .format("console") \
+    .option("truncate", "false") \
+    .start() \
+    .awaitTermination()
+
+
 # Process real_data immediately (real-time data processing)
 def process_real_data(batch_df, _):
     # Print the real-time data
@@ -72,7 +80,7 @@ df.writeStream \
 
 # Apply time-based window (32 minutes) for price_sequence
 df_windowed = df.withColumn(
-    "window", window("timestamp", "32 minutes")
+    "window", window("timestamp", "32 minutes", '1 minute')
 ) \
     .groupBy("window") \
     .agg(collect_list("close").alias("price_sequence")) \
@@ -82,6 +90,8 @@ df_windowed = df.withColumn(
 def process_pred_data(batch_df, _):
     # Chuyển đổi sang DataFrame pandas
     pandas_df = batch_df.toPandas()
+    
+    print(pandas_df)
     
     # Tách cột window thành start và end
     pandas_df['window_start'] = pandas_df['window'].apply(lambda x: x['start'])

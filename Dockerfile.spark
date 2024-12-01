@@ -1,12 +1,19 @@
 FROM bitnami/spark:latest
 WORKDIR /app
-COPY ./streaming_layer/* /app/
+
+# Copy application files
+COPY ./streaming_layer/entrypoint.sh /app/
+COPY ./streaming_layer/requirements.txt /app/
+COPY ./streaming_layer/streaming_job.py /app/
 COPY ./trained_model/* /app/trained_model/
+COPY ./streaming_layer/jars/* /opt/bitnami/spark/jars/
+COPY ./streaming_layer/jars /root/.ivy2/cache
+
 USER root
-# RUN mkdir -p /var/lib/apt/lists/partial
-# RUN apt-get update 
-# RUN apt-get install -y python3-pip 
-RUN pip install pyspark[sql,kafka]
+RUN chmod +x /app/entrypoint.sh
+
+# Install dependencies
 RUN pip3 install -r /app/requirements.txt
-# CMD ["spark-submit", "--master", "spark://spark-master:7077", "/app/streaming_job.py"]
-CMD ["spark-submit", "--packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2", "--master", "spark://spark-master:7077", "/app/streaming_job.py"]
+
+# Use the shell script as the entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
