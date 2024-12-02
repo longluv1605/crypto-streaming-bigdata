@@ -1,9 +1,19 @@
 import pickle
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, from_json, unix_timestamp, lit, size, window, collect_list, to_timestamp
-from pyspark.sql.types import StructType, StructField, StringType, DoubleType
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
 from pyspark.sql.window import Window
 import pandas as pd
+
+import logging
+
+# Initializing Logging  
+logging.basicConfig(filename='/logggg')
+logging.getLogger("py4j").setLevel(logging.ERROR)
+logger=logging.getLogger(f'hihihihi')
+logger.setLevel(logging.INFO)
+logging.captureWarnings(True)
+logger.info("********************************Execution started**************************************")
 
 # Initialize Spark session
 spark = SparkSession.builder \
@@ -28,8 +38,8 @@ df = spark.readStream \
     .option("subscribe", "bitcoin-topic") \
     .load()
 
-print("======================================================  1  ====================================================================")
    
+logger.info("======================================================  1  ====================================================================")
 df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)") \
     .writeStream \
     .outputMode("append") \
@@ -38,6 +48,7 @@ df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)") \
     .start() \
     .awaitTermination()
 
+logger.info("======================================================  1.1  ====================================================================")
 
 # Deserialize and preprocess the data
 df = df.selectExpr("CAST(value AS STRING)") \
@@ -45,22 +56,24 @@ df = df.selectExpr("CAST(value AS STRING)") \
     .select("data.timestamp", "data.close") \
     .withColumn("timestamp", to_timestamp(col("timestamp"), "yyyy-MM-dd HH:mm:ss"))
 
-# Add water mark
-df = df.withWatermark("timestamp", "1 minute")
 
+logger.info("======================================================  2  ====================================================================")
 df.writeStream \
     .outputMode("append") \
     .format("console") \
     .option("truncate", "false") \
     .start() \
     .awaitTermination()
+# Add water mark
+logger.info("======================================================  2.1  ====================================================================")
+
 
 
 # Process real_data immediately (real-time data processing)
 def process_real_data(batch_df, _):
     # Print the real-time data
-    print("======================================================  2  ====================================================================")
     
+    logger.info("======================================================  3  ====================================================================")
     batch_df.show(truncate=False)
     
     # Write real_data to HBase
@@ -78,6 +91,13 @@ df.writeStream \
     .outputMode("append") \
     .start()
 
+logger.info("======================================================  3.1  ====================================================================")
+
+df = df.withWatermark("timestamp", "1 minute")
+
+
+logger.info("======================================================  4  ====================================================================")
+
 # Apply time-based window (32 minutes) for price_sequence
 df_windowed = df.withColumn(
     "window", window("timestamp", "32 minutes", '1 minute')
@@ -85,13 +105,16 @@ df_windowed = df.withColumn(
     .groupBy("window") \
     .agg(collect_list("close").alias("price_sequence")) \
     .filter(size(col("price_sequence")) == 32)
+    
+logger.info("======================================================  4.1  ====================================================================")
+
 
 # Process pred_data (Prediction)
 def process_pred_data(batch_df, _):
     # Chuyển đổi sang DataFrame pandas
     pandas_df = batch_df.toPandas()
     
-    print(pandas_df)
+    logger.info(pandas_df)
     
     # Tách cột window thành start và end
     pandas_df['window_start'] = pandas_df['window'].apply(lambda x: x['start'])
@@ -112,7 +135,7 @@ def process_pred_data(batch_df, _):
     # Kiểm tra xem dữ liệu có trống không trước khi tạo PySpark DataFrame
     if not pred_data.empty:
         # Chuyển pandas DataFrame thành PySpark DataFrame
-        print("======================================================  3  ====================================================================")
+        logger.info("======================================================  4  ====================================================================")
         spark_pred_data = spark.createDataFrame(pred_data)
         
         # Ghi pred_data vào HBase bằng PySpark DataFrame
@@ -123,7 +146,7 @@ def process_pred_data(batch_df, _):
             .mode("append") \
             .save()
     else:
-        print("Dữ liệu trống, không thể ghi vào HBase")
+        logger.info("Dữ liệu trống, không thể ghi vào HBase")
 
 
 # Write predicted data to HBase

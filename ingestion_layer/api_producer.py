@@ -33,6 +33,7 @@ def stream_bitcoin_data():
         print(f"Sent: {row}")
         time.sleep(5)
         idx += 1
+        break
 
 if __name__ == "__main__":
     stream_bitcoin_data()

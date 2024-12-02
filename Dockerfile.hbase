@@ -1,0 +1,18 @@
+FROM harisekhon/hbase
+
+# Copy your custom wrapper entrypoint
+COPY ./hbase/entrypoint.sh /entrypoint.sh
+# COPY ./hbase/custom-entrypoint.sh /custom-entrypoint.sh
+USER root
+# RUN chmod +x /custom-entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Copy your initialization script to /docker-entrypoint-initdb.d
+COPY ./hbase/init/create_tables.sh /docker-entrypoint-initdb.d/create_tables.sh
+RUN chmod +x /docker-entrypoint-initdb.d/create_tables.sh
+
+# Use the custom wrapper as the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Default command for HBase (e.g., master)
+# CMD ["master"]
