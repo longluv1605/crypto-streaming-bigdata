@@ -22,8 +22,8 @@ def create_kafka_consumer():
             time.sleep(5)  # Retry every 5 seconds
     return consumer
 
+consumer = create_kafka_consumer()
 def get_api_data():
-    consumer = create_kafka_consumer()
     for message in consumer:
         try: 
             data = json.loads(message.value)

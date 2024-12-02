@@ -18,11 +18,12 @@ def create_kafka_producer():
         except Exception as e:
             print(f"Kafka not available yet, retrying... Error: {e}")
             time.sleep(5)  # Retry every 5 seconds
+    print("Created producer")
     return producer
 
-producer = create_kafka_producer()
 
 def stream_bitcoin_data():
+    producer = create_kafka_producer()
     idx = 0
     data = pd.read_csv('/app/data/stream_data.csv')
     data = data[['timestamp', 'close']]
@@ -33,7 +34,6 @@ def stream_bitcoin_data():
         print(f"Sent: {row}")
         time.sleep(5)
         idx += 1
-        break
 
 if __name__ == "__main__":
     stream_bitcoin_data()

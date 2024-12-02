@@ -1,7 +1,8 @@
 FROM python:3.9-slim
+
 WORKDIR /app
 COPY ./ingestion_layer/* /app/
 COPY ./data/* /app/data/
 # RUN apt-get update && apt-get install -y gcc libpq-dev
-RUN pip install -v --no-cache-dir -r /app/requirements.txt
+RUN pip3 install -r /app/requirements.txt
 CMD ["python3", "/app/api_producer.py"]
