@@ -1,0 +1,11 @@
+FROM python:3.9-slim
+WORKDIR /app
+
+# Copy application files
+COPY ./streaming_layer/* /app/
+
+# Install dependencies
+RUN pip install -v --no-cache-dir -r /app/requirements.txt
+
+# Use the shell script as the entrypoint
+CMD ["python3", "/app/streaming_job.py"]

@@ -58,23 +58,23 @@ services:
     #     # networks:
     #     #     - spark-net
 
-    # ingestion:
-    #     build:
-    #         # context: ./ingestion_layer
-    #         dockerfile: ./Dockerfile.api
-    #     container_name: ingestion
-    #     depends_on:
-    #         - kafka
+    ingestion:
+        build:
+            # context: ./ingestion_layer
+            dockerfile: ./Dockerfile.api
+        container_name: ingestion
+        # depends_on:
+        #     - kafka
 
-    # spark-job:
-    #     build:
-    #         # context: ./streaming_layer
-    #         dockerfile: ./Dockerfile.spark
-    #     container_name: spark-job
-    #     depends_on:
-    #         - kafka
-    #         - spark-master
-    #         - hbase
+    streaming-job:
+        build:
+            # context: ./streaming_layer
+            dockerfile: ./Dockerfile.streaming
+        container_name: streaming-job
+        depends_on:
+            # - kafka
+            # - spark-master
+            - hbase
 
 # networks:
 #     spark-net:

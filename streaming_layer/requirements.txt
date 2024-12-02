@@ -1,4 +1,3 @@
-pyspark
-pandas 
 xgboost
-logging
+happybase
+kafka-python
