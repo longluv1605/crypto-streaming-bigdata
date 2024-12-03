@@ -6,18 +6,7 @@ services:
             ZOOKEEPER_CLIENT_PORT: 2181
         healthcheck:
             test:
-                [
-                    "CMD",
-                    "echo",
-                    "ruok",
-                    "|",
-                    "nc",
-                    "localhost",
-                    "2181",
-                    "|",
-                    "grep",
-                    "imok",
-                ]
+                ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181", "|", "grep", "imok",]
             interval: 10s
             timeout: 5s
             retries: 3
@@ -96,7 +85,7 @@ services:
     ingestion:
         build:
             # context: ./ingestion_layer
-            dockerfile: ./Dockerfile.api
+            dockerfile: ./Dockerfile.stream_producer
         container_name: ingestion
         depends_on:
             kafka:
