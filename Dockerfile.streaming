@@ -15,16 +15,18 @@ WORKDIR /app
 COPY ./streaming_layer/* /app/
 COPY ./trained_model/* /app/trained_model/
 USER root
-# RUN apt-get update 
-# RUN apt-get install -y build-essential 
-# RUN apt-get install -y python3-dev
-# RUN apt-get install -y cython3
+RUN apt-get update 
+RUN apt-get install libssl-dev
+RUN apt-get install -y build-essential 
+RUN apt-get install -y python3-dev
+RUN apt-get install -y cython3
 
 # Install dependencies
-# RUN pip3 install --upgrade pip
-RUN pip3 install --upgrade setuptools wheel
+RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade setuptools
+RUN pip3 install --upgrade wheel
 
-RUN pip3 install -r /app/requirements.txt
+RUN pip install -v --no-cache-dir -r /app/requirements.txt
 
 # Use the shell script as the entrypoint
-CMD ["python3", "/app/streaming_job.py"]
+CMD ["python", "/app/streaming_job.py"]

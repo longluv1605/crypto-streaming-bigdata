@@ -1,6 +1,8 @@
 import happybase
 
-HOST = 'hbase:2181'
+HOST = "hbase"
+PORT = 9090
+
 
 def insert_into_hbase(table_name, data):
     """
@@ -14,15 +16,18 @@ def insert_into_hbase(table_name, data):
     connection = None
     try:
         # Establish the connection
-        connection = happybase.Connection(HOST)
+        connection = happybase.Connection(HOST, port=PORT)
         table = connection.table(table_name)
 
         # Create row key and insert data
-        row_key = data['timestamp']
-        table.put(row_key, {
-            b'price:close': str(data['close']).encode('utf-8'),
-            b'time:timestamp': data['timestamp'].encode('utf-8')
-        })
+        row_key = data["timestamp"]
+        table.put(
+            row_key,
+            {
+                b"price:close": str(data["close"]).encode("utf-8"),
+                b"time:timestamp": data["timestamp"].encode("utf-8"),
+            },
+        )
 
         print(f"Inserted data into {table_name}: {data}")
     except Exception as e:

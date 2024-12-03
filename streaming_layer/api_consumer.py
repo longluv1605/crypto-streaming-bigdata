@@ -12,8 +12,6 @@ def create_kafka_consumer():
             # Create a Kafka consumer
             consumer = KafkaConsumer(
                             KAFKA_TOPIC,
-                            group_id='crypto',
-                            auto_offset_reset='latest',
                             bootstrap_servers=KAFKA_SERVER,
                             value_deserializer=lambda v: v.decode('utf-8')
                         )
