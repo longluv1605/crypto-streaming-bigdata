@@ -76,8 +76,6 @@ services:
     #         - "8080:8080"
     #     volumes:
     #         - ./streaming_layer:/app
-    #     # networks:
-    #     #     - spark-net
 
     # spark-worker:
     #     image: bitnami/spark:latest
@@ -87,8 +85,6 @@ services:
     #         - SPARK_MASTER_URL=spark://spark-master:7077
     #     depends_on:
     #         - spark-master
-    #     # networks:
-    #     #     - spark-net
 
     # streaming-job:
     #     build:
@@ -107,8 +103,6 @@ services:
         environment:
             - SPARK_MASTER_URL=spark://spark-master:7077
         depends_on:
-            kafka:
-                condition: service_healthy
 
     hadoop-namenode:
         image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
@@ -123,10 +117,6 @@ services:
         container_name: hadoop-datanode
         environment:
             - CORE_CONF_fs_defaultFS=hdfs://hadoop-namenode:9000
-
-    spark:
-        build: ./spark
-        container_name: spark
 
 
     # mysql:

@@ -1,7 +1,6 @@
 import time
 from datetime import datetime, timedelta
 import json
-import csv
 from kafka import KafkaConsumer
 from hdfs import InsecureClient
 
@@ -65,4 +64,5 @@ def save_to_hdfs(data):
 
 if __name__=='__main__':
     raw = get_api_data()
+    save_to_hdfs(data=raw)
     

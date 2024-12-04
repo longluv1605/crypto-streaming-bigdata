@@ -1,1 +1,3 @@
-pyspark
+kafka-python
+# scikit-learn
+# xgboost

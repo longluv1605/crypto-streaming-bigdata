@@ -1,0 +1,6 @@
+FROM bde2020/spark-base:3.1.1-hadoop3.2
+WORKDIR /app
+
+COPY ./batch_layer/* /app
+
+# CMD ["spark-submit", "--master", "local[*]", "spark_script.py"]
