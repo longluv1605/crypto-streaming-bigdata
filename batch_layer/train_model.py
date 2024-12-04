@@ -12,7 +12,7 @@ spark = SparkSession.builder \
 
 
 # 2. Đọc dữ liệu từ HDFS
-HDFS_URL = "hdfs://hadoop-namenode:9000"
+HDFS_URL = "hdfs://hadoop-namenode:8020"
 HDFS_WAREHOUSE = "/crypto/bitcoin/warehouse"
 year, month = 2024, 12  
 file_path = f"{HDFS_URL}/{HDFS_WAREHOUSE}/{year}/{month}/*.csv"

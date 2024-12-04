@@ -1,6 +1,9 @@
-FROM bde2020/spark-base:3.1.1-hadoop3.2
+FROM bde2020/spark-base:3.2.1-hadoop3.2
 WORKDIR /app
 
 COPY ./batch_layer/* /app
 
+RUN pip install -v --no-cache-dir -r /app/requirements.txt
+
 # CMD ["spark-submit", "--master", "local[*]", "spark_script.py"]
+CMD ["tail", "-f", "/dev/null"]

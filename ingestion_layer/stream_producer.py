@@ -21,8 +21,8 @@ def create_kafka_producer():
     print("Created producer")
     return producer
 
+producer = create_kafka_producer()
 def stream_bitcoin_data():
-    producer = create_kafka_producer()
     idx = 0
     data = pd.read_csv('/app/data/stream_data.csv')
     data = data[['timestamp', 'close']]

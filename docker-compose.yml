@@ -100,9 +100,8 @@ services:
         build:
             dockerfile: ./Dockerfile.batch
         container_name: batch-job
-        environment:
-            - SPARK_MASTER_URL=spark://spark-master:7077
-        depends_on:
+        # environment:
+        #     - SPARK_MASTER_URL=spark://spark-master:7077
 
     hadoop-namenode:
         image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
@@ -111,12 +110,17 @@ services:
             - CLUSTER_NAME=hadoop-cluster
         ports:
             - 9870:9870
+            - 9000:9000
+            - 8020:8020
 
     hadoop-datanode:
         image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
         container_name: hadoop-datanode
         environment:
-            - CORE_CONF_fs_defaultFS=hdfs://hadoop-namenode:9000
+            - CORE_CONF_fs_defaultFS=hdfs://hadoop-namenode:8020
+        depends_on:
+            - hadoop-namenode
+
 
 
     # mysql:
