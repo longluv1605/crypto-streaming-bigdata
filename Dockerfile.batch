@@ -3,6 +3,8 @@ WORKDIR /app
 
 COPY ./batch_layer/* /app
 
+USER root
+RUN apk --no-cache add  musl-dev linux-headers g++ gcc python3-dev
 RUN pip3 install -v --no-cache-dir -r /app/requirements.txt
 
 # CMD ["spark-submit", "--master", "local[*]", "spark_script.py"]

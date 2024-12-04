@@ -2,7 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.evaluation import RegressionEvaluator
 # from xgboost.spark import SparkXGBRegressor
-from xgboost.spark import SparkXGBRegressor
+from pyspark.ml.regression import GBTRegressor
+from datetime import datetime
 
 
 # 1. Tạo SparkSession
@@ -14,7 +15,16 @@ spark = SparkSession.builder \
 # 2. Đọc dữ liệu từ HDFS
 HDFS_URL = "hdfs://hadoop-namenode:8020"
 HDFS_WAREHOUSE = "/crypto/bitcoin/warehouse"
-year, month = 2024, 12  
+
+with open('/app/date.txt', 'r') as f:
+    timestamp = f.readline()
+f.close()
+
+dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+year = dt.year
+month = dt.month
+
+
 file_path = f"{HDFS_URL}/{HDFS_WAREHOUSE}/{year}/{month}/*.csv"
 
 df = spark.read.csv(file_path, header=True, inferSchema=True)
@@ -42,14 +52,8 @@ train_data, test_data = df.randomSplit([0.8, 0.2], seed=42)
 #                         featuresCol="features", 
 #                         labelCol="future_close")
 
-xgb = SparkXGBRegressor(objective="reg:squarederror", 
-                        maxDepth=5, 
-                        eta=0.1, 
-                        numRound=100, 
-                        featuresCol="features", 
-                        labelCol="future_close")
-
-model = xgb.fit(train_data)
+gbt = GBTRegressor(featuresCol="features", labelCol="future_close", maxIter=100)
+model = gbt.fit(train_data)
 
 # 6. Dự đoán trên tập kiểm tra
 predictions = model.transform(test_data)
@@ -61,4 +65,4 @@ rmse = evaluator.evaluate(predictions)
 print(f"Root Mean Squared Error (RMSE): {rmse}")
 
 # 8. Lưu mô hình
-model.write().overwrite().save(f"{HDFS_URL}/crypto/models/xgb_bitcoin_model")
+model.write().overwrite().save(f"{HDFS_URL}/crypto/bitcoin/models/gbt_bitcoin_model")

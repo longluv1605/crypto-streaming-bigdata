@@ -7,7 +7,6 @@ from hdfs import InsecureClient
 KAFKA_TOPIC = "bitcoin-batch"
 KAFKA_SERVER = "kafka:9092"
 
-
 HDFS_URL = "http://hadoop-namenode:9870"
 HDFS_PATH = "/crypto/bitcoin/datalake"
 client = InsecureClient(HDFS_URL, user="root")

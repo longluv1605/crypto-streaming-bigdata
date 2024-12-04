@@ -33,8 +33,6 @@ def streaming_process():
                 print(f"Error converting 'close' to float: {e}")
                 continue
             
-            insert_into_hbase('real_stream', real_data)
-            
             if len(dq) == 32:
                 print("eeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 store = np.array(list(dq))
@@ -58,6 +56,7 @@ def streaming_process():
                 print(pred_data)
                 
                 insert_into_hbase('pred_stream', pred_data)
+            insert_into_hbase('real_stream', real_data)
             
             print("hihii")
         print("hihiiiiiiii")

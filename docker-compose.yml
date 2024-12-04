@@ -42,59 +42,38 @@ services:
             timeout: 5s
             retries: 3
 
-    # hbase:
-    #     build:
-    #         dockerfile: ./Dockerfile.hbase
-    #     container_name: hbase
-    #     ports:
-    #         - "2181:2181"
-    #         - "16010:16010"
-    #         - "8085:8085"
-    #     environment:
-    #         HBASE_ZOOKEEPER_QUORUM: zookeeper
-    #         HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT: 2181
-    #     depends_on:
-    #         zookeeper:
-    #             condition: service_healthy
-    #     healthcheck:
-    #         test: >
-    #             bash -c "
-    #             echo 'exists \"real_stream\"' | hbase shell | grep 'Table real_stream does exist'
-    #             "
-    #         interval: 30s
-    #         timeout: 10s
-    #         retries: 7
+    hbase:
+        build:
+            dockerfile: ./Dockerfile.hbase
+        container_name: hbase
+        ports:
+            - "2181:2181"
+            - "16010:16010"
+            - "8085:8085"
+        environment:
+            HBASE_ZOOKEEPER_QUORUM: zookeeper
+            HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT: 2181
+        depends_on:
+            zookeeper:
+                condition: service_healthy
+        healthcheck:
+            test: >
+                bash -c "
+                echo 'exists \"real_stream\"' | hbase shell | grep 'Table real_stream does exist'
+                "
+            interval: 30s
+            timeout: 10s
+            retries: 7
 
-    # spark-master:
-    #     image: bitnami/spark:latest
-    #     container_name: spark-master
-    #     environment:
-    #         - SPARK_MODE=master
-    #         - SPARK_RPC_AUTHENTICATION_ENABLED=no
-    #     ports:
-    #         - "7077:7077"
-    #         - "8080:8080"
-    #     volumes:
-    #         - ./streaming_layer:/app
-
-    # spark-worker:
-    #     image: bitnami/spark:latest
-    #     container_name: spark-worker
-    #     environment:
-    #         - SPARK_MODE=worker
-    #         - SPARK_MASTER_URL=spark://spark-master:7077
-    #     depends_on:
-    #         - spark-master
-
-    # streaming-job:
-    #     build:
-    #         dockerfile: ./Dockerfile.streaming
-    #     container_name: streaming-job
-    #     depends_on:
-    #         kafka:
-    #             condition: service_healthy
-    #         hbase:
-    #             condition: service_healthy
+    streaming-job:
+        build:
+            dockerfile: ./Dockerfile.streaming
+        container_name: streaming-job
+        depends_on:
+            kafka:
+                condition: service_healthy
+            hbase:
+                condition: service_healthy
 
     batch-job:
         build:

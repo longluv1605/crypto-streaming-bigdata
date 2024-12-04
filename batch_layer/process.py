@@ -2,9 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, avg, stddev, unix_timestamp, lead
 from pyspark.sql.window import Window
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from hdfs import InsecureClient
 
 # HDFS Configurations
 HDFS_URL = "hdfs://hadoop-namenode:8020"
@@ -40,7 +39,7 @@ def process_to_warehouse():
 
     
     # 3. Làm sạch dữ liệu
-    df_cleaned = df.dropna()  # Loại bỏ các hàng có giá trị null
+    df_cleaned = df.na.drop()  # Loại bỏ các hàng có giá trị null
     df_cleaned = df_cleaned.withColumn("timestamp", unix_timestamp(col("timestamp")))
     
     print("------------------------- Cleaned data ------------------")
@@ -61,7 +60,7 @@ def process_to_warehouse():
     df_features = df_features.withColumn("future_close", lead("close").over(window_spec))
 
     # 6. Loại bỏ các bản ghi không có giá trị future_close
-    df_features = df_features.filter(col("future_close").isNotNull())
+    df_features = df_features.na.drop()
     
     print("------------------------- Created future close col ------------------")
     
