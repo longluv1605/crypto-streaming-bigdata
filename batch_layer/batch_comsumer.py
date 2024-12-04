@@ -9,7 +9,6 @@ KAFKA_SERVER = "kafka:9092"
 
 HDFS_URL = "http://hadoop-namenode:9870"
 HDFS_PATH = "/crypto/bitcoin/datalake"
-client = InsecureClient(HDFS_URL, user="root")
 
 
 # Get data from Kafka
@@ -23,7 +22,7 @@ def create_kafka_consumer():
                 bootstrap_servers=KAFKA_SERVER,
                 value_deserializer=lambda v: v.decode("utf-8"),
                 group_id="batch-consumer-group",
-                auto_offset_reset="earliest",
+                auto_offset_reset="latest",
             )
         except Exception as e:
             print(f"Kafka not available yet, retrying... Error: {e}")
@@ -42,7 +41,8 @@ def get_api_data():
         try:
             data = json.loads(message.value)
             print("Loaded data from message")
-            print(data)
+            timestamp = data['timestamp'][list(data['timestamp'].keys())[-1]]
+            print(timestamp)
             return data
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON: {e}")
@@ -53,10 +53,10 @@ def save_to_hdfs(data):
     # try:
     # Prepare the header (column names) and rows (data)
     header = list(data.keys())
-    rows = [[data[col][str(i)] for col in header] for i in range(len(data["timestamp"]))]
+    rows = [[data[col][str(i)] for col in header] for i in list(data['timestamp'].keys())]
     print("Got data")
     
-    time = data['timestamp']['0']
+    time = data['timestamp'][list(data['timestamp'].keys())[-1]]
     
     with open('/app/date.txt', 'w') as f:
         f.write(time)
@@ -70,19 +70,29 @@ def save_to_hdfs(data):
     print(f"{day}-{month}-{year}")
 
     file_path = f"{HDFS_PATH}/{year}/{month}/data_{day}.csv"
-    with client.write(file_path) as writer:
-        print("Created writer!")
-        writer.write(f'{",".join(map(str, header))}\n')
-        print("Wrote header")
+    print(file_path)
+    
+    retries = 0
+    while True:
+        try:
+            client = InsecureClient(HDFS_URL, user="root")
+            
+            with client.write(file_path) as writer:
+                print("Created writer!")
+                writer.write(f'{",".join(map(str, header))}\n')
+                print("Wrote header")
 
-        i = 0
-        for row in rows:
-            writer.write(f"{','.join(map(str, row))}\n")
-            print("Wrote line ", i)
-            i += 1
-    # except Exception as e:
-    #     print(f"Error put data to datalake: {e}")
-    print("Uploaded data to DATALAKE!")
+                for row in rows:
+                    writer.write(f"{','.join(map(str, row))}\n")
+            # except Exception as e:
+            #     print(f"Error put data to datalake: {e}")
+            print("Uploaded data to DATALAKE!")
+            break
+        except Exception as e:
+            print(f"Error: {e}")
+            retries += 1
+            if retries == 10:
+                break
 
 
 if __name__ == "__main__":
