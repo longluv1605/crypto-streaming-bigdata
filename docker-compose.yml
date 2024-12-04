@@ -1,4 +1,12 @@
 services:
+    ingestion:
+        build:
+            dockerfile: ./Dockerfile.ingestion
+        container_name: ingestion
+        depends_on:
+            kafka:
+                condition: service_healthy
+
     zookeeper:
         image: confluentinc/cp-zookeeper:7.3.0
         container_name: zookeeper
@@ -34,28 +42,28 @@ services:
             timeout: 5s
             retries: 3
 
-    hbase:
-        build:
-            dockerfile: ./Dockerfile.hbase
-        container_name: hbase
-        ports:
-            - "2181:2181"
-            - "16010:16010"
-            - "8085:8085"
-        environment:
-            HBASE_ZOOKEEPER_QUORUM: zookeeper
-            HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT: 2181
-        depends_on:
-            zookeeper:
-                condition: service_healthy
-        healthcheck:
-            test: >
-                bash -c "
-                echo 'exists \"real_stream\"' | hbase shell | grep 'Table real_stream does exist'
-                "
-            interval: 30s
-            timeout: 10s
-            retries: 7
+    # hbase:
+    #     build:
+    #         dockerfile: ./Dockerfile.hbase
+    #     container_name: hbase
+    #     ports:
+    #         - "2181:2181"
+    #         - "16010:16010"
+    #         - "8085:8085"
+    #     environment:
+    #         HBASE_ZOOKEEPER_QUORUM: zookeeper
+    #         HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT: 2181
+    #     depends_on:
+    #         zookeeper:
+    #             condition: service_healthy
+    #     healthcheck:
+    #         test: >
+    #             bash -c "
+    #             echo 'exists \"real_stream\"' | hbase shell | grep 'Table real_stream does exist'
+    #             "
+    #         interval: 30s
+    #         timeout: 10s
+    #         retries: 7
 
     # spark-master:
     #     image: bitnami/spark:latest
@@ -82,27 +90,52 @@ services:
     #     # networks:
     #     #     - spark-net
 
-    ingestion:
+    # streaming-job:
+    #     build:
+    #         dockerfile: ./Dockerfile.streaming
+    #     container_name: streaming-job
+    #     depends_on:
+    #         kafka:
+    #             condition: service_healthy
+    #         hbase:
+    #             condition: service_healthy
+
+    batch-job:
         build:
-            # context: ./ingestion_layer
-            dockerfile: ./Dockerfile.stream_producer
-        container_name: ingestion
+            dockerfile: ./Dockerfile.batch
+        container_name: batch-job
+        environment:
+            - SPARK_MASTER_URL=spark://spark-master:7077
         depends_on:
             kafka:
                 condition: service_healthy
 
-    streaming-job:
-        build:
-            # context: ./streaming_layer
-            dockerfile: ./Dockerfile.streaming
-        container_name: streaming-job
-        depends_on:
-            # - hbase
-            # - kafka
-            kafka:
-                condition: service_healthy
-            hbase:
-                condition: service_healthy
-# networks:
-#     spark-net:
-#         driver: bridge
+    hadoop-namenode:
+        image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+        container_name: hadoop-namenode
+        environment:
+            - CLUSTER_NAME=hadoop-cluster
+        ports:
+            - 9870:9870
+
+    hadoop-datanode:
+        image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+        container_name: hadoop-datanode
+        environment:
+            - CORE_CONF_fs_defaultFS=hdfs://hadoop-namenode:9000
+
+    spark:
+        build: ./spark
+        container_name: spark
+
+
+    # mysql:
+    #     image: mysql:8.0
+    #     container_name: mysql
+    #     environment:
+    #     MYSQL_ROOT_PASSWORD: rootpassword
+    #     MYSQL_DATABASE: pipeline_db
+    #     ports:
+    #         - 3306:3306
+    #     volumes:
+    #         - mysql-data:/var/lib/mysql

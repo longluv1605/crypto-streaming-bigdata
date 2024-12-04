@@ -1,7 +1,0 @@
-FROM python:3.9-slim
-
-COPY ./ingestion_layer/* /app/
-COPY ./data/* /app/data/
-# RUN apt-get update && apt-get install -y gcc libpq-dev
-RUN pip install -v --no-cache-dir -r /app/requirements.txt
-CMD ["python3", "/app/stream_producer.py"]

@@ -1,5 +1,5 @@
 from collections import deque
-from api_consumer import get_api_data
+from streaming_layer.stream_consumer import get_api_data
 from insert_to_hbase import insert_into_hbase
 import pickle
 from datetime import datetime, timedelta

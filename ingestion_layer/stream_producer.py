@@ -3,7 +3,7 @@ import json
 import pandas as pd
 from kafka import KafkaProducer
 
-KAFKA_TOPIC = 'bitcoin-topic'
+KAFKA_TOPIC = 'bitcoin-stream'
 KAFKA_SERVER = 'kafka:9092'
 
 
@@ -31,7 +31,7 @@ def stream_bitcoin_data():
         print(f"Sending: {row}")
         producer.send(KAFKA_TOPIC, row)
         print(f"Sent: {row}")
-        time.sleep(5)
+        time.sleep(10)
         idx += 1
 
 if __name__ == "__main__":
