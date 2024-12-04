@@ -1,3 +1,5 @@
 kafka-python
+hdfs
+pyspark
 # scikit-learn
 # xgboost
