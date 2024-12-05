@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import json
 from kafka import KafkaConsumer
 from hdfs import InsecureClient
+from kafka import TopicPartition
+
 
 KAFKA_TOPIC = "bitcoin-batch"
 KAFKA_SERVER = "kafka:9092"
@@ -10,59 +12,54 @@ KAFKA_SERVER = "kafka:9092"
 HDFS_URL = "http://hadoop-namenode:9870"
 HDFS_PATH = "/crypto/bitcoin/datalake"
 
-
-# Get data from Kafka
 def create_kafka_consumer():
     consumer = None
     while consumer is None:
         try:
-            # Create a Kafka consumer
             consumer = KafkaConsumer(
                 KAFKA_TOPIC,
                 bootstrap_servers=KAFKA_SERVER,
                 value_deserializer=lambda v: v.decode("utf-8"),
                 group_id="batch-consumer-group",
-                auto_offset_reset="latest",
+                auto_offset_reset="latest",  # Đọc từ thông điệp mới nhất
             )
         except Exception as e:
             print(f"Kafka not available yet, retrying... Error: {e}")
-            time.sleep(5)  # Retry every 5 seconds
+            time.sleep(5)
     print("Created consumer!")
     return consumer
 
 
-consumer = create_kafka_consumer()
-
-
-def get_api_data():
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<")
+def get_latest_data(consumer):
+    data = []
     for message in consumer:
-        print("--------------<>--------------")
-        try:
-            data = json.loads(message.value)
-            print("Loaded data from message")
-            timestamp = data['timestamp'][list(data['timestamp'].keys())[-1]]
-            print(timestamp)
-            return data
-        except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
-            continue
+        print("\nGot message:")
+        value = json.loads(message.value)
+        if len(list(value["timestamp"].keys())) > 0:
+            print(value["timestamp"][list(value["timestamp"].keys())[0]])
+            print(value["timestamp"][list(value["timestamp"].keys())[-1]])
+        data.append(value)
+        return value
+    
+    return data[-1]
 
 
 def save_to_hdfs(data):
     # try:
     # Prepare the header (column names) and rows (data)
     header = list(data.keys())
-    rows = [[data[col][str(i)] for col in header] for i in list(data['timestamp'].keys())]
+    rows = [
+        [data[col][str(i)] for col in header] for i in list(data["timestamp"].keys())
+    ]
     print("Got data")
-    
-    time = data['timestamp'][list(data['timestamp'].keys())[-1]]
-    
-    with open('/app/date.txt', 'w') as f:
-        f.write(time)
+
+    timestamp = data["timestamp"][list(data["timestamp"].keys())[-1]]
+
+    with open("/app/date.txt", "w") as f:
+        f.write(timestamp)
     f.close()
 
-    dt = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
+    dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
     year = dt.year
     month = dt.month
     day = dt.day
@@ -71,31 +68,27 @@ def save_to_hdfs(data):
 
     file_path = f"{HDFS_PATH}/{year}/{month}/data_{day}.csv"
     print(file_path)
-    
-    retries = 0
-    while True:
-        try:
-            client = InsecureClient(HDFS_URL, user="root")
-            
-            with client.write(file_path) as writer:
-                print("Created writer!")
-                writer.write(f'{",".join(map(str, header))}\n')
-                print("Wrote header")
 
-                for row in rows:
-                    writer.write(f"{','.join(map(str, row))}\n")
-            # except Exception as e:
-            #     print(f"Error put data to datalake: {e}")
-            print("Uploaded data to DATALAKE!")
-            break
-        except Exception as e:
-            print(f"Error: {e}")
-            retries += 1
-            if retries == 10:
-                break
+    client = InsecureClient(HDFS_URL, user="root")
+
+    if client.status(file_path, strict=False):
+        print(f"File {file_path} already exists. Skipping...")
+    else:
+        with client.write(file_path) as writer:
+            writer.write(f'{",".join(map(str, header))}\n')
+            for row in rows:
+                writer.write(f"{','.join(map(str, row))}\n")
+        print("Uploaded data to DATALAKE!")
 
 
 if __name__ == "__main__":
-    print("------------START !!!!!!!!!!!! --------------------")
-    raw = get_api_data()
-    save_to_hdfs(data=raw)
+    consumer = create_kafka_consumer()
+    consumer.poll(timeout_ms=0)  # Xóa bộ đệm cũ
+    consumer.seek_to_end()  # Di chuyển đến offset cuối cùng
+    print("Waiting for latest message...")
+    latest_message = get_latest_data(consumer)
+    if latest_message:
+        save_to_hdfs(latest_message)
+    else:
+        print("No messages to process.")
+

@@ -40,6 +40,7 @@ def process_to_warehouse():
     
     # 3. Làm sạch dữ liệu
     df_cleaned = df.na.drop()  # Loại bỏ các hàng có giá trị null
+    df_cleaned = df_cleaned.dropDuplicates(['timestamp'])
     df_cleaned = df_cleaned.withColumn("timestamp", unix_timestamp(col("timestamp")))
     
     print("------------------------- Cleaned data ------------------")

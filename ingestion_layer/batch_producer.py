@@ -34,17 +34,19 @@ def get_idx(filepath='/app/idx.txt'):
 def get_data_from_api(idx, datapath='/app/data/batch_data.csv'):
     df = pd.read_csv(datapath)
     data = df.iloc[idx:idx+1440]
+    print(data.shape)
     return data.to_dict()
 
 producer = create_kafka_producer()
 def batch_bitcoin_data():
     try:
+        time.sleep(10)
         idx = get_idx()
+        print(idx)
         data = get_data_from_api(idx)
         print(f"Sending: {data.keys()}")
         producer.send(KAFKA_TOPIC, data)
         print(f"Sent: {data.keys()}")
-        time.sleep(5)
     except Exception as e:
         print("Error to sent batch_bitcoin_data: ", e)
 
