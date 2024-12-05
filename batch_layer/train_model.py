@@ -4,6 +4,7 @@ from pyspark.ml.evaluation import RegressionEvaluator
 # from xgboost.spark import SparkXGBRegressor
 from pyspark.ml.regression import GBTRegressor
 from datetime import datetime
+import sys
 
 
 # 1. Tạo SparkSession
@@ -20,9 +21,13 @@ with open('/app/date.txt', 'r') as f:
     timestamp = f.readline()
 f.close()
 
-dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
-year = dt.year
-month = dt.month
+if sys.argv[1] is not None and sys.argv[2] is not None:
+    year = sys.argv[1]
+    month = sys.argv[2]
+else:    
+    dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+    year = dt.year
+    month = dt.month
 
 
 file_path = f"{HDFS_URL}/{HDFS_WAREHOUSE}/{year}/{month}/*.csv"

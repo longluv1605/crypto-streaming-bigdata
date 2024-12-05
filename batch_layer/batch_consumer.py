@@ -51,6 +51,10 @@ def save_to_hdfs(data):
     rows = [
         [data[col][str(i)] for col in header] for i in list(data["timestamp"].keys())
     ]
+    
+    if len(row) == 0:
+        print("Data is empty")
+        return
     print("Got data")
 
     timestamp = data["timestamp"][list(data["timestamp"].keys())[-1]]

@@ -14,7 +14,18 @@ services:
             ZOOKEEPER_CLIENT_PORT: 2181
         healthcheck:
             test:
-                ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181", "|", "grep", "imok",]
+                [
+                    "CMD",
+                    "echo",
+                    "ruok",
+                    "|",
+                    "nc",
+                    "localhost",
+                    "2181",
+                    "|",
+                    "grep",
+                    "imok",
+                ]
             interval: 10s
             timeout: 5s
             retries: 3
@@ -33,8 +44,8 @@ services:
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
             KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-            KAFKA_LOG_RETENTION_HOURS: 72  # Example: Retain messages for 3 days
-            KAFKA_LOG_RETENTION_BYTES: 1073741824  # Example: 1 GB per partition
+            KAFKA_LOG_RETENTION_HOURS: 72 # Example: Retain messages for 3 days
+            KAFKA_LOG_RETENTION_BYTES: 1073741824 # Example: 1 GB per partition
         depends_on:
             zookeeper:
                 condition: service_healthy
@@ -81,6 +92,10 @@ services:
         build:
             dockerfile: ./Dockerfile.batch
         container_name: batch-job
+        depends_on:
+            - hadoop-namenode
+            - hadoop-datanode
+            - kafka
         # environment:
         #     - SPARK_MASTER_URL=spark://spark-master:7077
 
@@ -91,7 +106,7 @@ services:
             - CLUSTER_NAME=hadoop-cluster
         ports:
             - 9870:9870
-            - 9000:9000
+            - 9001:9000
             - 8020:8020
 
     hadoop-datanode:
@@ -101,8 +116,6 @@ services:
             - CORE_CONF_fs_defaultFS=hdfs://hadoop-namenode:8020
         depends_on:
             - hadoop-namenode
-
-
 
     # mysql:
     #     image: mysql:8.0
@@ -114,3 +127,19 @@ services:
     #         - 3306:3306
     #     volumes:
     #         - mysql-data:/var/lib/mysql
+
+    airflow:
+        build: 
+            dockerfile: ./Dockerfile.airflow
+        container_name: airflow
+        depends_on:
+            - ingestion
+            - batch-job
+        ports:
+            - 8080:8080
+        environment:
+            - AIRFLOW__CORE__PARALLELISM=16
+            - AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG=4
+        volumes:
+            - ./airflow/dags:/opt/airflow/dags
+            - /var/run/docker.sock:/var/run/docker.sock
