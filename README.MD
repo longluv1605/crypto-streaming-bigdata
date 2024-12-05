@@ -70,4 +70,3 @@ Airflow is used to:
 
 1. Operate data processing `every day`
 2. `Monthly` refresh model
-

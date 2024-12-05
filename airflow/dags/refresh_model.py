@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.operators.bash import BashOperator # type: ignore
 from datetime import datetime
 
 start_date=datetime(2024, 11, 1)
