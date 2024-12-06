@@ -2,9 +2,10 @@ import time
 import json
 import pandas as pd
 from kafka import KafkaProducer
+import env
 
-KAFKA_TOPIC = 'bitcoin-batch'
-KAFKA_SERVER = 'kafka:9092'
+KAFKA_TOPIC = env.BATCH_TOPIC
+KAFKA_SERVER = env.KAFKA_SERVER
 
 
 def create_kafka_producer():

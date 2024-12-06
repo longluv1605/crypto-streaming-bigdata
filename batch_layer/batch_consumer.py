@@ -3,14 +3,14 @@ from datetime import datetime, timedelta
 import json
 from kafka import KafkaConsumer
 from hdfs import InsecureClient
-from kafka import TopicPartition
+from insert_into_db import insert_into_mysql
+import env
 
+KAFKA_TOPIC = env.KAFKA_TOPIC
+KAFKA_SERVER = env.KAFKA_SERVER
 
-KAFKA_TOPIC = "bitcoin-batch"
-KAFKA_SERVER = "kafka:9092"
-
-HDFS_URL = "http://hadoop-namenode:9870"
-HDFS_PATH = "/crypto/bitcoin/datalake"
+HDFS_URL = env.HDFS_URL
+HDFS_PATH = env.HDFS_DATALAKE
 
 def create_kafka_consumer():
     consumer = None
@@ -21,7 +21,7 @@ def create_kafka_consumer():
                 bootstrap_servers=KAFKA_SERVER,
                 value_deserializer=lambda v: v.decode("utf-8"),
                 group_id="batch-consumer-group",
-                auto_offset_reset="latest",  # Đọc từ thông điệp mới nhất
+                auto_offset_reset="latest",
             )
         except Exception as e:
             print(f"Kafka not available yet, retrying... Error: {e}")
@@ -87,12 +87,13 @@ def save_to_hdfs(data):
 
 if __name__ == "__main__":
     consumer = create_kafka_consumer()
-    consumer.poll(timeout_ms=0)  # Xóa bộ đệm cũ
-    consumer.seek_to_end()  # Di chuyển đến offset cuối cùng
+    consumer.poll(timeout_ms=0)
+    consumer.seek_to_end()
     print("Waiting for latest message...")
     latest_message = get_latest_data(consumer)
     if latest_message:
         save_to_hdfs(latest_message)
+        # insert_into_mysql(latest_message)
     else:
         print("No messages to process.")
 

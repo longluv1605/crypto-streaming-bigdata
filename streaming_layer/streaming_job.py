@@ -23,10 +23,9 @@ def streaming_process():
             print(real_data)
             print("Received data!")
             
-            # Chuyển đổi giá trị 'close' sang float trước khi thêm vào deque
             try:
                 timestamp = real_data['timestamp']
-                close_price = float(real_data['close'])  # Ép kiểu tại đây
+                close_price = float(real_data['close']) 
                 dq.append([timestamp, close_price])
                 print("Inserted into queue!")
             except ValueError as e:
@@ -34,7 +33,6 @@ def streaming_process():
                 continue
             
             if len(dq) == 32:
-                print("eeeeeeeeeeeeeeeeeeeeeeeeeeeee")
                 store = np.array(list(dq))
                 x = store[:, 1].astype(float)
                 print(x)
@@ -58,9 +56,6 @@ def streaming_process():
                 insert_into_hbase('pred_stream', pred_data)
             insert_into_hbase('real_stream', real_data)
             
-            print("hihii")
-        print("hihiiiiiiii")
-                
         
 if __name__ == "__main__":
     streaming_process()

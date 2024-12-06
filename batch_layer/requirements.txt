@@ -4,3 +4,4 @@ pyspark
 numpy==1.21.5
 # scikit-learn
 # xgboost
+# mysql-connector-python

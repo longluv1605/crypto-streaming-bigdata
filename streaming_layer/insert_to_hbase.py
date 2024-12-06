@@ -1,18 +1,11 @@
 import happybase
+import env
 
-HOST = "hbase"
-PORT = 9090
+HOST = env.HBASE_HOST
+PORT = env.HBASE_PORT
 
 
 def insert_into_hbase(table_name, data):
-    """
-    Insert data into HBase.
-
-    Args:
-        table_name (str): Name of the HBase table.
-        data (dict): Data to insert (must contain keys 'timestamp' and 'close').
-
-    """
     connection = None
     try:
         # Establish the connection

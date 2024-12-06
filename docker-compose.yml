@@ -44,12 +44,12 @@ services:
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
             KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-            KAFKA_LOG_RETENTION_HOURS: 72 # Example: Retain messages for 3 days
-            KAFKA_LOG_RETENTION_BYTES: 1073741824 # Example: 1 GB per partition
-            KAFKA_MESSAGE_MAX_BYTES: 1048576000  # Set the max message size to 1 GB
-            KAFKA_LOG_SEGMENT_BYTES: 1073741824  # Set the max size of each log segment (1 GB)
-            KAFKA_LOG_RETENTION_MS: 86400000  # Optional, control retention time (1 day)
-            KAFKA_MAX_REQUEST_SIZE: 1048576000  # Increase the max request size (1 GB)
+            KAFKA_LOG_RETENTION_HOURS: 72
+            KAFKA_LOG_RETENTION_BYTES: 1073741824 
+            KAFKA_MESSAGE_MAX_BYTES: 1048576000
+            KAFKA_LOG_SEGMENT_BYTES: 1073741824 
+            KAFKA_LOG_RETENTION_MS: 86400000 
+            KAFKA_MAX_REQUEST_SIZE: 1048576000  
             KAFKA_REPLICATION_FACTOR: 1
             KAFKA_PARTITIONS: 3
         depends_on:
@@ -127,15 +127,17 @@ services:
     #     image: mysql:8.0
     #     container_name: mysql
     #     environment:
-    #     MYSQL_ROOT_PASSWORD: rootpassword
-    #     MYSQL_DATABASE: pipeline_db
+    #     MYSQL_ROOT_PASSWORD: admin
+    #     MYSQL_DATABASE: crypto
+    #     MYSQL_USER: admin
+    #     MYSQL_PASSWORD: admin
     #     ports:
-    #         - 3306:3306
+    #         - "3306:3306"
     #     volumes:
-    #         - mysql-data:/var/lib/mysql
+    #         - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
     airflow:
-        build: 
+        build:
             dockerfile: ./Dockerfile.airflow
         container_name: airflow
         depends_on:

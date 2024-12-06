@@ -1,9 +1,10 @@
 import time
 import json
 from kafka import KafkaConsumer
+import env
 
-KAFKA_TOPIC = "bitcoin-stream"
-KAFKA_SERVER = "kafka:9092"
+KAFKA_TOPIC = env.KAFKA_TOPIC
+KAFKA_SERVER = env.KAFKA_SERVER
 
 
 def create_kafka_consumer():
