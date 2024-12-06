@@ -1,6 +1,7 @@
 services:
     ingestion:
         build:
+            context: ./
             dockerfile: ./Dockerfile.ingestion
         container_name: ingestion
         depends_on:
@@ -63,6 +64,7 @@ services:
 
     hbase:
         build:
+            context: ./
             dockerfile: ./Dockerfile.hbase
         container_name: hbase
         ports:
@@ -86,6 +88,7 @@ services:
 
     streaming-job:
         build:
+            context: ./
             dockerfile: ./Dockerfile.streaming
         container_name: streaming-job
         depends_on:
@@ -96,6 +99,7 @@ services:
 
     batch-job:
         build:
+            context: ./
             dockerfile: ./Dockerfile.batch
         container_name: batch-job
         depends_on:
@@ -138,6 +142,7 @@ services:
 
     airflow:
         build:
+            context: ./
             dockerfile: ./Dockerfile.airflow
         container_name: airflow
         depends_on:

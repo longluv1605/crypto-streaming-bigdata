@@ -1,7 +1,7 @@
 FROM bde2020/spark-base:3.2.1-hadoop3.2
 WORKDIR /app
 
-COPY ./batch_layer/* /app
+COPY ./batch_layer/* /app/
 
 USER root
 RUN apk --no-cache add  musl-dev linux-headers g++ gcc python3-dev
