@@ -1,3 +1,4 @@
 data/*
 !data/stream_data.csv
+!data/batch_data.csv
 .venv

@@ -1,26 +1,68 @@
 services:
+    ingestion:
+        build:
+            dockerfile: ./Dockerfile.ingestion
+        container_name: ingestion
+        depends_on:
+            kafka:
+                condition: service_healthy
+
     zookeeper:
         image: confluentinc/cp-zookeeper:7.3.0
         container_name: zookeeper
         environment:
             ZOOKEEPER_CLIENT_PORT: 2181
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "echo",
+                    "ruok",
+                    "|",
+                    "nc",
+                    "localhost",
+                    "2181",
+                    "|",
+                    "grep",
+                    "imok",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 3
 
-    # kafka:
-    #     image: confluentinc/cp-kafka:7.3.0
-    #     container_name: kafka
-    #     ports:
-    #         - "9093:9092"
-    #     environment:
-    #         KAFKA_BROKER_ID: 1
-    #         KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    #         KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
-    #         KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-    #         KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-    #     depends_on:
-    #         - zookeeper
+    kafka:
+        image: confluentinc/cp-kafka:7.3.0
+        container_name: kafka
+        ports:
+            - "9093:9092"
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_LOG_RETENTION_HOURS: 72
+            KAFKA_LOG_RETENTION_BYTES: 1073741824 
+            KAFKA_MESSAGE_MAX_BYTES: 1048576000
+            KAFKA_LOG_SEGMENT_BYTES: 1073741824 
+            KAFKA_LOG_RETENTION_MS: 86400000 
+            KAFKA_MAX_REQUEST_SIZE: 1048576000  
+            KAFKA_REPLICATION_FACTOR: 1
+            KAFKA_PARTITIONS: 3
+        depends_on:
+            zookeeper:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/9092"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
 
     hbase:
-        build: 
+        build:
             dockerfile: ./Dockerfile.hbase
         container_name: hbase
         ports:
@@ -31,51 +73,82 @@ services:
             HBASE_ZOOKEEPER_QUORUM: zookeeper
             HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT: 2181
         depends_on:
-            - zookeeper
+            zookeeper:
+                condition: service_healthy
+        healthcheck:
+            test: >
+                bash -c "
+                echo 'exists \"real_stream\"' | hbase shell | grep 'Table real_stream does exist'
+                "
+            interval: 30s
+            timeout: 10s
+            retries: 7
 
-    # spark-master:
-    #     image: bitnami/spark:latest
-    #     container_name: spark-master
+    streaming-job:
+        build:
+            dockerfile: ./Dockerfile.streaming
+        container_name: streaming-job
+        depends_on:
+            kafka:
+                condition: service_healthy
+            hbase:
+                condition: service_healthy
+
+    batch-job:
+        build:
+            dockerfile: ./Dockerfile.batch
+        container_name: batch-job
+        depends_on:
+            - hadoop-namenode
+            - hadoop-datanode
+            - kafka
+        # environment:
+        #     - SPARK_MASTER_URL=spark://spark-master:7077
+
+    hadoop-namenode:
+        image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+        container_name: hadoop-namenode
+        environment:
+            - CLUSTER_NAME=hadoop-cluster
+        ports:
+            - 9870:9870
+            - 9001:9000
+            - 8020:8020
+
+    hadoop-datanode:
+        image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+        container_name: hadoop-datanode
+        environment:
+            - CORE_CONF_fs_defaultFS=hdfs://hadoop-namenode:8020
+        depends_on:
+            - hadoop-namenode
+
+    # mysql:
+    #     image: mysql:8.0
+    #     container_name: mysql
     #     environment:
-    #         - SPARK_MODE=master
-    #         - SPARK_RPC_AUTHENTICATION_ENABLED=no
+    #     MYSQL_ROOT_PASSWORD: admin
+    #     MYSQL_DATABASE: crypto
+    #     MYSQL_USER: admin
+    #     MYSQL_PASSWORD: admin
     #     ports:
-    #         - "7077:7077"
-    #         - "8080:8080"
+    #         - "3306:3306"
     #     volumes:
-    #         - ./streaming_layer:/app
-    #     # networks:
-    #     #     - spark-net
+    #         - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
-    # spark-worker:
-    #     image: bitnami/spark:latest
-    #     container_name: spark-worker
-    #     environment:
-    #         - SPARK_MODE=worker
-    #         - SPARK_MASTER_URL=spark://spark-master:7077
-    #     depends_on:
-    #         - spark-master
-    #     # networks:
-    #     #     - spark-net
-
-    # ingestion:
-    #     build:
-    #         # context: ./ingestion_layer
-    #         dockerfile: ./Dockerfile.api
-    #     container_name: ingestion
-    #     depends_on:
-    #         - kafka
-
-    # spark-job:
-    #     build:
-    #         # context: ./streaming_layer
-    #         dockerfile: ./Dockerfile.spark
-    #     container_name: spark-job
-    #     depends_on:
-    #         - kafka
-    #         - spark-master
-    #         - hbase
-
-# networks:
-#     spark-net:
-#         driver: bridge
+    airflow:
+        build:
+            dockerfile: ./Dockerfile.airflow
+        container_name: airflow
+        depends_on:
+            - ingestion
+            - batch-job
+        ports:
+            - 8080:8080
+        environment:
+            - AIRFLOW__CORE__PARALLELISM=32
+            - AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG=4
+            # - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+        volumes:
+            - ./airflow/dags:/opt/airflow/dags
+            - /var/run/docker.sock:/var/run/docker.sock
