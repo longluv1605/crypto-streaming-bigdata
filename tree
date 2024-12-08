@@ -1,0 +1,48 @@
+├── .gitignore
+├── airflow/
+│   ├── dags/
+│   │   ├── batch_dag.py
+|   |   └── retrain_model.py 
+│   └── requirements.txt
+├── batch_layer/
+│   ├── batch_consumer.py
+│   ├── date.txt
+│   ├── env.py
+│   ├── insert_into_db.py
+│   ├── process.py
+│   ├── requirements.txt
+│   └── train_model.py
+├── data/
+│   ├── batch_data.csv
+│   └── stream_data.csv
+├── hbase/
+│   ├── entrypoint.sh
+│   └── init/
+|       └── create_tables.sh
+├── ingestion_layer/
+│   ├── batch_producer.py
+│   ├── env.py
+│   ├── idx.txt
+│   ├── requirements.txt
+│   └── stream_producer.py
+├── mysql/
+│   └── init.sql
+├── streaming_layer/
+│   ├── env.py
+│   ├── get_new_model.py
+│   ├── insert_into_hbase.py
+│   ├── requirements.txt
+│   ├── stream_consumer.py
+│   └── streaming_job.py
+├── trained_model/
+│   └── xgboost.pkl
+├── docker-compose.yml
+├── Dockerfile.airflow
+├── Dockerfile.batch
+├── Dockerfile.hbase
+├── Dockerfile.ingestion
+├── Dockerfile.streaming
+├── image.png
+├── README.MD
+├── requirements.txt
+└── test.ipynb
