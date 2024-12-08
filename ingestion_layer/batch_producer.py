@@ -45,7 +45,7 @@ producer = create_kafka_producer()
 
 def batch_bitcoin_data():
     try:
-        time.sleep(10)
+        # time.sleep(10)
         idx = get_idx()
         print(idx)
         data = get_data_from_api(idx)

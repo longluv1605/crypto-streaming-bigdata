@@ -89,8 +89,8 @@ def save_to_hdfs(data):
 
 if __name__ == "__main__":
     consumer = create_kafka_consumer()
-    consumer.poll(timeout_ms=0)
-    consumer.seek_to_end()
+    # consumer.poll(timeout_ms=0)
+    # consumer.seek_to_end()
     print("Waiting for latest message...")
     latest_message = get_latest_data(consumer)
     consumer.close()
