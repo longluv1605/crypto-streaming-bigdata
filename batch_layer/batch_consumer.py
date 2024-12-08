@@ -1,8 +1,8 @@
 import time
 from datetime import datetime, timedelta
 import json
-from kafka import KafkaConsumer
-from hdfs import InsecureClient
+from kafka import KafkaConsumer # type: ignore
+from hdfs import InsecureClient # type: ignore
 # from insert_into_db import insert_into_mysql
 import env
 

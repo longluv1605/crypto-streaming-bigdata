@@ -1,4 +1,4 @@
-import happybase
+import happybase # type: ignore
 import env
 
 HOST = env.HBASE_HOST

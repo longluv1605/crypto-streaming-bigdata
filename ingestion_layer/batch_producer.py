@@ -1,7 +1,7 @@
 import time
 import json
 import pandas as pd
-from kafka import KafkaProducer
+from kafka import KafkaProducer # type: ignore
 import env
 
 KAFKA_TOPIC = env.BATCH_TOPIC
