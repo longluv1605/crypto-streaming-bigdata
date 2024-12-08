@@ -9,6 +9,11 @@
 | Phan Văn Hiếu   | 22022527     | QH-2022-I/CQ-A-AI2 |
 | Nguyễn Đức Minh | 22022533     | QH-2022-I/CQ-A-AI2 |
 
+`SLIDE and REPORT`:
+
+- [Slide](https://github.com/longluv1605/crypto-streaming-bigdata/blob/main/SLIDE.pdf)
+- [Report](https://github.com/longluv1605/crypto-streaming-bigdata/blob/main/REPORT.pdf)
+
 ## 1. How to run our project
 
 1. Setup docker, docker-compose
