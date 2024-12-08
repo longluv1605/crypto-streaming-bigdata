@@ -1,3 +1,4 @@
 happybase
 kafka-python
 xgboost
+scikit-learn==1.5.1

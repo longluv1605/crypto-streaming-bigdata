@@ -71,6 +71,7 @@ services:
             - "2181:2181"
             - "16010:16010"
             - "8085:8085"
+            - "9090:9090"
         environment:
             HBASE_ZOOKEEPER_QUORUM: zookeeper
             HBASE_ZOOKEEPER_PROPERTY_CLIENTPORT: 2181
@@ -157,3 +158,15 @@ services:
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - /var/run/docker.sock:/var/run/docker.sock
+
+    flask:
+        build:
+            context: ./
+            dockerfile: ./Dockerfile.flask
+        container_name: flask
+        depends_on:
+            hbase:
+                condition: service_healthy
+        ports:
+            - 5000:5000
+        

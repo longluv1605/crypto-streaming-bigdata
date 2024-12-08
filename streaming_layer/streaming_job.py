@@ -7,14 +7,15 @@ import numpy as np
 
 WINDOW=32
 def load_model():
-    with open("/app/trained_model/xgboost.pkl", "rb") as f:
-        model = pickle.load(f)   
-    return model
+    with open("/app/trained_model/xgboost.pkl", "rb") as model_file, open('/app/trained_model/scaler.pkl', 'rb') as scaler_file:
+        model = pickle.load(model_file)
+        scaler = pickle.load(scaler_file)   
+    return model, scaler
 
 def streaming_process():
     dq = deque(maxlen=WINDOW)
     print("Created deque!")
-    model = load_model()
+    model, scaler = load_model()
     print("Loaded Model!")
 
     while True:
@@ -38,7 +39,11 @@ def streaming_process():
                 print(x)
                 print("Extracted input")
                 
-                pred = model.predict([x])[0]
+                x = scaler.transform([x])
+                print(x)
+                print("Scaled input")
+                
+                pred = model.predict(x)[0]
                 print(pred)
                 print("Predicted!")
                 

@@ -2,8 +2,6 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-COPY ./streaming_layer/* /app/
-COPY ./trained_model/* /app/trained_model/
 USER root
 RUN apt-get update 
 RUN apt-get install libssl-dev
@@ -15,6 +13,8 @@ RUN pip3 install --upgrade pip
 RUN pip3 install --upgrade setuptools
 RUN pip3 install --upgrade wheel
 
+COPY ./streaming_layer/* /app/
+COPY ./trained_model/* /app/trained_model/
 RUN pip install -v --no-cache-dir -r /app/requirements.txt
 
 CMD ["python", "/app/streaming_job.py"]

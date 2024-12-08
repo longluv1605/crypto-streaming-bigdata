@@ -1,0 +1,3 @@
+# HBase
+HBASE_HOST = "hbase"
+HBASE_PORT = 9090

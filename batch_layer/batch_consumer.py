@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import json
 from kafka import KafkaConsumer
 from hdfs import InsecureClient
-from insert_into_db import insert_into_mysql
+# from insert_into_db import insert_into_mysql
 import env
 
 KAFKA_TOPIC = env.KAFKA_TOPIC

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Line Chart with Live Value</title>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="container" style="height: 600px; width: 100%;"></div>
+
+    <div>
+        <h3>Live Values:</h3>
+        <p>Price: <span id="value1">--</span></p>
+        <p>Predict Price: <span id="value2">--</span></p>
+    </div>
+
+    <script>
+        // Khởi tạo biểu đồ Highcharts với 2 đường
+        Highcharts.stockChart('container', {
+            rangeSelector: {
+                selected: 1
+            },
+            title: {
+                text: 'Two Lines in One Chart with Live Value'
+            },
+            series: [
+                {
+                    name: 'Series 1',
+                    data: [],
+                    tooltip: {
+                        valueDecimals: 2
+                    }
+                },
+                {
+                    name: 'Series 2',
+                    data: [],
+                    tooltip: {
+                        valueDecimals: 2
+                    }
+                }
+            ]
+        });
+
+        // Cập nhật dữ liệu từ API mỗi giây
+        setInterval(function() {
+            $.getJSON('/data', function(response) {
+                const chart = Highcharts.charts[0];  // Lấy biểu đồ hiện tại
+                const series1 = response.data;
+                const series2 = response.predict_data;
+
+                // Cập nhật dữ liệu cho hai series
+                chart.series[0].setData(series1);
+                chart.series[1].setData(series2);
+
+                // Lấy giá trị cuối cùng của mỗi series và cập nhật vào các ô
+                const lastValue1 = series1[series1.length - 1] ? series1[series1.length - 1][1] : '--';
+                const lastValue2 = series2[series2.length - 1] ? series2[series2.length - 1][1] : '--';
+
+                // Cập nhật giá trị vào các ô HTML
+                document.getElementById("value1").textContent = lastValue1;
+                document.getElementById("value2").textContent = lastValue2;
+            });
+        }, 1000);  // Cập nhật mỗi giây
+    </script>
+</body>
+</html>
