@@ -1,8 +1,9 @@
 import time
 from datetime import datetime, timedelta
 import json
-from kafka import KafkaConsumer # type: ignore
-from hdfs import InsecureClient # type: ignore
+from kafka import KafkaConsumer  # type: ignore
+from hdfs import InsecureClient  # type: ignore
+
 # from insert_into_db import insert_into_mysql
 import env
 
@@ -11,6 +12,7 @@ KAFKA_SERVER = env.KAFKA_SERVER
 
 HDFS_URL = env.HDFS_URL
 HDFS_PATH = env.HDFS_DATALAKE
+
 
 def create_kafka_consumer():
     consumer = None
@@ -40,7 +42,7 @@ def get_latest_data(consumer):
             print(value["timestamp"][list(value["timestamp"].keys())[-1]])
         data.append(value)
         return value
-    
+
     return data[-1]
 
 
@@ -51,8 +53,8 @@ def save_to_hdfs(data):
     rows = [
         [data[col][str(i)] for col in header] for i in list(data["timestamp"].keys())
     ]
-    
-    if len(row) == 0:
+
+    if len(rows) == 0:
         print("Data is empty")
         return
     print("Got data")
@@ -91,9 +93,10 @@ if __name__ == "__main__":
     consumer.seek_to_end()
     print("Waiting for latest message...")
     latest_message = get_latest_data(consumer)
+    consumer.close()
+
     if latest_message:
         save_to_hdfs(latest_message)
         # insert_into_mysql(latest_message)
     else:
         print("No messages to process.")
-
