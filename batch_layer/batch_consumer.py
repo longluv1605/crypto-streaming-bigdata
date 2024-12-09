@@ -23,7 +23,7 @@ def create_kafka_consumer():
                 bootstrap_servers=KAFKA_SERVER,
                 value_deserializer=lambda v: v.decode("utf-8"),
                 group_id="batch-consumer-group",
-                auto_offset_reset="latest",
+                auto_offset_reset="earliest",
             )
         except Exception as e:
             print(f"Kafka not available yet, retrying... Error: {e}")

@@ -29,6 +29,7 @@ Then you can:
 - Browse `http://localhost:16010`: Check hbase information
 - Browse `http://localhost:9870`: Check HDFS information
 - Browse `http://localhost:8080`: Interact with Airflow Web UI
+- Browse `http://localhost:5000`: View streaming chart
 
 ## 2. Our project Architecture
 

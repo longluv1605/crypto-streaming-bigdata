@@ -45,6 +45,7 @@ def generate_data():
             continue
         if len(data) > 100:  # Giữ tối đa 100 điểm
             data.pop(0)
+        print(len(predict_data))
         if len(predict_data) > 100:
             predict_data.pop(0)
         time.sleep(1)

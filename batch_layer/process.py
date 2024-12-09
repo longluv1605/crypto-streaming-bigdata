@@ -63,7 +63,7 @@ def process_to_warehouse():
     print("------------------------- Saved to warehouse ------------------")
     
 
-    # write_to_database(df_features)
+#     write_to_database(df_features)
 
 # def write_to_database(df_features):
 #     df_features.write.format("jdbc") \
@@ -74,5 +74,6 @@ def process_to_warehouse():
 #         .option("password", "admin") \
 #         .mode("append") \
 #         .save()
+#     print("Inserted data in to MySQL")
 
 process_to_warehouse()
