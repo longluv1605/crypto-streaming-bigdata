@@ -4,8 +4,8 @@ import env
 def prepare_data(data):
     # Normalize into a list of dictionaries
     normalized_data = [
-        {key: value[idx] for key, value in data.items()}
-        for idx in range(len(next(iter(data.values()))))
+        {key: value[str(idx)] for key, value in data.items()}
+        for idx in list(data['timestamp'].keys())
     ]
     return normalized_data
 

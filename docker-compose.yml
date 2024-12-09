@@ -46,11 +46,11 @@ services:
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
             KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
             KAFKA_LOG_RETENTION_HOURS: 72
-            KAFKA_LOG_RETENTION_BYTES: 1073741824 
+            KAFKA_LOG_RETENTION_BYTES: 1073741824
             KAFKA_MESSAGE_MAX_BYTES: 1048576000
-            KAFKA_LOG_SEGMENT_BYTES: 1073741824 
-            KAFKA_LOG_RETENTION_MS: 86400000 
-            KAFKA_MAX_REQUEST_SIZE: 1048576000  
+            KAFKA_LOG_SEGMENT_BYTES: 1073741824
+            KAFKA_LOG_RETENTION_MS: 86400000
+            KAFKA_MAX_REQUEST_SIZE: 1048576000
             KAFKA_REPLICATION_FACTOR: 1
             KAFKA_PARTITIONS: 3
         depends_on:
@@ -128,18 +128,18 @@ services:
         depends_on:
             - hadoop-namenode
 
-    # mysql:
-    #     image: mysql:8.0
-    #     container_name: mysql
-    #     environment:
-    #     MYSQL_ROOT_PASSWORD: admin
-    #     MYSQL_DATABASE: crypto
-    #     MYSQL_USER: admin
-    #     MYSQL_PASSWORD: admin
-    #     ports:
-    #         - "3306:3306"
-    #     volumes:
-    #         - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    mysql:
+        image: mysql:8.0
+        container_name: mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: admin
+            MYSQL_DATABASE: crypto
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: admin
+        ports:
+            - "3306:3306"
+        volumes:
+            - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     airflow:
         build:
@@ -169,4 +169,3 @@ services:
                 condition: service_healthy
         ports:
             - 5000:5000
-        

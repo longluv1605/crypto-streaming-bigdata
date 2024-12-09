@@ -8,9 +8,14 @@ HDFS_URL = "hdfs://hadoop-namenode:8020"
 HDFS_DATALAKE = "/crypto/bitcoin/datalake"
 HDFS_WAREHOUSE = "/crypto/bitcoin/warehouse"
 
+mysql_jar_path = "/spark/jars/mysql-connector-java-8.0.28.jar"
+
 spark = SparkSession.builder \
     .appName("Bitcoin Batch Processing") \
     .config("spark.hadoop.fs.defaultFS", "hdfs://hadoop-namenode:8020") \
+    .config("spark.jars", mysql_jar_path) \
+    .config("spark.driver.extraClassPath", mysql_jar_path) \
+    .config("spark.executor.extraClassPath", mysql_jar_path) \
     .getOrCreate()
     
     
@@ -35,7 +40,7 @@ def process_to_warehouse():
     
     df_cleaned = df.na.drop() 
     df_cleaned = df_cleaned.dropDuplicates(['timestamp'])
-    df_cleaned = df_cleaned.withColumn("timestamp", unix_timestamp(col("timestamp")))
+    # df_cleaned = df_cleaned.withColumn("timestamp", unix_timestamp(col("timestamp")))
     
     print("------------------------- Cleaned data ------------------")
 
@@ -63,17 +68,17 @@ def process_to_warehouse():
     print("------------------------- Saved to warehouse ------------------")
     
 
-#     write_to_database(df_features)
+    write_to_database(df_features)
 
-# def write_to_database(df_features):
-#     df_features.write.format("jdbc") \
-#         .option("url", "jdbc:mysql://localhost:3306/crypto") \
-#         .option("driver", "com.mysql.cj.jdbc.Driver") \
-#         .option("dbtable", "bitcoin_processed") \
-#         .option("user", "admin") \
-#         .option("password", "admin") \
-#         .mode("append") \
-#         .save()
-#     print("Inserted data in to MySQL")
+def write_to_database(df_features):
+    df_features.write.format("jdbc") \
+        .option("url", "jdbc:mysql://mysql:3306/crypto") \
+        .option("driver", "com.mysql.cj.jdbc.Driver") \
+        .option("dbtable", "bitcoin_processed") \
+        .option("user", "admin") \
+        .option("password", "admin") \
+        .mode("append") \
+        .save()
+    print("Inserted data in to MySQL")
 
 process_to_warehouse()

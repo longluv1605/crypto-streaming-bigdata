@@ -3,6 +3,10 @@ WORKDIR /app
 USER root
 RUN apk --no-cache add  musl-dev linux-headers g++ gcc python3-dev
 
+ENV MYSQL_DRIVER_VERSION 8.0.28
+
+RUN wget https://repo1.maven.org/maven2/mysql/mysql-connector-java/${MYSQL_DRIVER_VERSION}/mysql-connector-java-${MYSQL_DRIVER_VERSION}.jar -P /spark/jars/
+
 COPY ./batch_layer/requirements.txt /app/
 
 RUN pip3 install -v --no-cache-dir -r /app/requirements.txt

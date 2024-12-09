@@ -4,7 +4,7 @@ import json
 from kafka import KafkaConsumer  # type: ignore
 from hdfs import InsecureClient  # type: ignore
 
-# from insert_into_db import insert_into_mysql
+from insert_into_db import insert_into_mysql
 import env
 
 KAFKA_TOPIC = env.KAFKA_TOPIC
@@ -94,9 +94,9 @@ if __name__ == "__main__":
     print("Waiting for latest message...")
     latest_message = get_latest_data(consumer)
     consumer.close()
-
+    print(latest_message['timestamp'].keys())
     if latest_message:
         save_to_hdfs(latest_message)
-        # insert_into_mysql(latest_message)
+        insert_into_mysql(latest_message)
     else:
         print("No messages to process.")
